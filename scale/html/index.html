@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale Menu</title>
+
+    <!-- Must be inline so the page is never black, even for one frame -->
+    <style>
+        html, body {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+    </style>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="scale-menu" class="hidden">
+
+        <div class="inner">
+
+            <!-- Header -->
+            <div class="header">
+                <div class="header-top">
+                    <span class="header-dot"></span>
+                    <span class="header-title">Character Scale</span>
+                </div>
+                <p class="header-sub">Adjust your height</p>
+            </div>
+
+            <!-- Height Readout -->
+            <div class="height-block">
+                <div class="height-glow"></div>
+                <div class="height-eyebrow">Current Height</div>
+                <div class="height-imperial" id="height-imperial">6'0"</div>
+                <div class="height-metric"   id="height-metric">183 cm</div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-scale">1.00x</div>
+                    <div class="stat-lbl">Scale Factor</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-diff">+0"</div>
+                    <div class="stat-lbl">vs Default</div>
+                </div>
+            </div>
+
+            <!-- Slider -->
+            <div class="slider-section">
+                <div class="slider-header">
+                    <span class="slider-lbl">Height Slider</span>
+                    <span class="slider-range" id="slider-range">4'10" — 7'2"</span>
+                </div>
+                <div class="slider-wrap">
+                    <input type="range" id="height-slider" min="0" max="1000" step="1" value="500">
+                    <div class="def-tick" id="def-tick"></div>
+                </div>
+                <div class="slider-ticks">
+                    <span id="tick-min">4'10"</span>
+                    <span id="tick-mid">6'0" avg</span>
+                    <span id="tick-max">7'2"</span>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="btn-row">
+                <button class="btn btn-reset"   id="btn-reset">Reset</button>
+                <button class="btn btn-confirm" id="btn-confirm">Confirm</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
