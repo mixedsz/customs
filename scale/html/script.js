@@ -2,7 +2,6 @@
 
 const BASE_IN = 72;
 
-// Safe wrapper — GetParentResourceName is injected by FiveM's CEF layer
 function nuiFetch(endpoint, data) {
     let name;
     try {
@@ -12,17 +11,12 @@ function nuiFetch(endpoint, data) {
         console.warn('[ScaleM] GetParentResourceName unavailable, using fallback: scale');
     }
     const url = `https://${name}/${endpoint}`;
-    console.log(`[ScaleM] → ${endpoint}  url: ${url}  payload:`, data ?? {});
     return fetch(url, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(data ?? {}),
-    }).then(res => {
-        console.log(`[ScaleM] ← ${endpoint}  status: ${res.status}`);
-        return res;
     }).catch(err => {
-        console.error(`[ScaleM] ✗ fetch failed for "${endpoint}". Resource: "${name}". Error:`, err.message);
-        console.error('[ScaleM] If you see this, do: restart ' + name + '  in your server console');
+        console.error(`[ScaleM] fetch failed for "${endpoint}":`, err.message);
     });
 }
 
@@ -43,7 +37,6 @@ const tickMaxEl = document.getElementById('tick-max');
 const rangeEl   = document.getElementById('slider-range');
 const defTick   = document.getElementById('def-tick');
 
-// ── Conversions ───────────────────────────────────────────────────────
 function toInches(scale)   { return scale * BASE_IN; }
 function toCm(totalIn)     { return Math.round(totalIn * 2.54); }
 
@@ -57,7 +50,6 @@ function fmtImperial(totalIn) {
 function scaleToSlider(s) { return ((s - minScale) / (maxScale - minScale)) * 1000; }
 function sliderToScale(v) { return minScale + (v / 1000) * (maxScale - minScale); }
 
-// ── Display update ────────────────────────────────────────────────────
 function updateDisplay(scale) {
     currentScale = scale;
 
@@ -74,27 +66,22 @@ function updateDisplay(scale) {
     slider.style.setProperty('--fill', progress.toFixed(2) + '%');
     slider.value = Math.round(scaleToSlider(scale));
 
-    // Brief glow pulse on the height number
     impEl.classList.remove('glow');
     void impEl.offsetWidth;
     impEl.classList.add('glow');
-    setTimeout(() => impEl.classList.remove('glow'), 180);
+    setTimeout(() => impEl.classList.remove('glow'), 200);
 }
 
-// ── Open / Close ──────────────────────────────────────────────────────
 function applyTheme(hex) {
     if (!hex) return;
-    const h = hex.replace('#', '');
-    const r = parseInt(h.slice(0,2), 16);
-    const g = parseInt(h.slice(2,4), 16);
-    const b = parseInt(h.slice(4,6), 16);
-    document.documentElement.style.setProperty('--accent',     hex);
-    document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+    // Theme is locked to Love Street Stories pink, but allow overrides
+    document.documentElement.style.setProperty('--hot-pink', hex);
+    document.documentElement.style.setProperty('--neon-pink', hex);
 }
 
 function openMenu(data) {
-    console.log('[ScaleM] openMenu received:', data);
-    applyTheme(data.themeColor);
+    // Keep LSS pink as default, apply server override if provided
+    if (data.themeColor) applyTheme(data.themeColor);
 
     minScale     = data.minScale     ?? 0.806;
     maxScale     = data.maxScale     ?? 1.194;
@@ -105,11 +92,10 @@ function openMenu(data) {
     const maxIn = toInches(maxScale);
 
     tickMinEl.textContent = fmtImperial(minIn);
-    tickMidEl.textContent = fmtImperial(defIn) + ' avg';
+    tickMidEl.textContent = fmtImperial(defIn);
     tickMaxEl.textContent = fmtImperial(maxIn);
     rangeEl.textContent   = fmtImperial(minIn) + ' — ' + fmtImperial(maxIn);
 
-    // Position default-height notch
     const defPct = ((defaultScale - minScale) / (maxScale - minScale)) * 100;
     defTick.style.left = defPct.toFixed(2) + '%';
 
@@ -123,17 +109,15 @@ function openMenu(data) {
 
 function closeMenu() {
     menu.classList.remove('visible');
-    setTimeout(() => menu.classList.add('hidden'), 360);
+    setTimeout(() => menu.classList.add('hidden'), 380);
 }
 
-// ── Slider ────────────────────────────────────────────────────────────
 slider.addEventListener('input', function () {
     const scale = sliderToScale(parseFloat(this.value));
     updateDisplay(scale);
     nuiFetch('preview', { scale: scale });
 });
 
-// ── Buttons ───────────────────────────────────────────────────────────
 document.getElementById('btn-confirm').addEventListener('click', () => {
     nuiFetch('confirm', { scale: currentScale });
     closeMenu();
@@ -144,7 +128,6 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     closeMenu();
 });
 
-// ── Message handler ───────────────────────────────────────────────────
 window.addEventListener('message', (event) => {
     const data = event.data;
     if (!data?.type) return;
@@ -152,7 +135,6 @@ window.addEventListener('message', (event) => {
     if (data.type === 'closeMenu') closeMenu();
 });
 
-// ── Escape ────────────────────────────────────────────────────────────
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         nuiFetch('close');
